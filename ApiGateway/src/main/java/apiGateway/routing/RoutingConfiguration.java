@@ -15,6 +15,7 @@ public class RoutingConfiguration {
 //				http://localhost:8765/currency-conversion...
 				.route(p -> p.path("/currency-exchange").uri("lb://currency-exchange"))
 				.route(p -> p.path("/currency-conversion").uri("lb://currency-conversion"))
+				.route(p -> p.path("/users/**").uri("lb://users-service"))
 				.build();
 	}
 }
