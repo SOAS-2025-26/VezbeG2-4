@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import feign.FeignException.FeignClientException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import serviceLibrary.dto.currencyConversion.CurrencyConversionDto;
 import serviceLibrary.dto.currencyExchange.CurrencyExchangeDto;
 import serviceLibrary.proxies.CurrencyExchangeProxy;
@@ -19,6 +21,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
 	private CurrencyExchangeProxy proxy;
 	
 	@Override
+	@CircuitBreaker(name = "cb", fallbackMethod = "fallback")
 	public ResponseEntity<?> currencyConversion(String from, String to, double quantity) {
 //		String apiUrl = 
 //		String.format("http://localhost:8080/currency-exchange?from=%s&to=%s"
@@ -37,6 +40,10 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
 				String.format("Converted %s %s to %s %s", quantity, from.toUpperCase(),
 						exchangedAmount, to.toUpperCase()));
 		return ResponseEntity.ok(finalResponse);
+	}
+	
+	public ResponseEntity<?> fallback(CallNotPermittedException ex){
+		return ResponseEntity.status(503).body(ex.getMessage());
 	}
 
 }
